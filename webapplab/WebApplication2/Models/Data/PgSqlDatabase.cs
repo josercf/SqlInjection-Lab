@@ -1,4 +1,5 @@
 ﻿using Npgsql;
+
 using System;
 using System.Collections.Generic;
 using System.Data;
@@ -10,22 +11,27 @@ namespace webappsql.Models.Data
     {
         private readonly PgConnectionConfig _pgConfig;
 
-        public PgSqlDatabase(PgConnectionConfig pgConfig)
+        public PgSqlDatabase(IConfiguration configuration)
         {
-            _pgConfig = pgConfig;
+            _pgConfig = new PgConnectionConfig
+            {
+                ConnectionUri = configuration["DATABASE_URL"],
+                Password = configuration["DATABASE_PASSWORD"],
+                Username = configuration["DATABASE_USER"]
+            };
         }
 
         static string GetConnectionString(PgConnectionConfig pgConfig)
         {
-            var databaseUri = new Uri(pgConfig.ConnectionUri);
+            //var databaseUri = new Uri(pgConfig.ConnectionUri);
             var builder = new NpgsqlConnectionStringBuilder
             {
-                Host = databaseUri.Host,
-                Port = databaseUri.Port,
+                Host = pgConfig.ConnectionUri,
+                Port = 5432,
                 Username = pgConfig.Username,
                 Password = pgConfig.Password,
-                Database = databaseUri.LocalPath.TrimStart('/'),
-                SslMode = SslMode.Require,
+                Database = "",
+                SslMode = SslMode.Disable,
                 TrustServerCertificate = true,
                 //UseSslStream = true,
                 Pooling = true
